@@ -54,7 +54,9 @@ class DataBaseApi:
         cursor.execute(f"""CREATE TABLE IF NOT EXISTS suffixes (
             suffixes_id TEXT PRIMARY KEY NOT NULL,
             bank_id TEXT NOT NULL,
-            suffix TEXT NOT NULL
+            suffix TEXT NOT NULL,
+            expected_response_format TEXT
+            
             );""")  
         
         cursor.execute(f"""CREATE TABLE IF NOT EXISTS statistics (

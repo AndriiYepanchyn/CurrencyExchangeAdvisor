@@ -2,9 +2,10 @@ import sys
 import subprocess
 import os
 import DataBaseApi
+from CurrencyUI import CurrencyUI
 from time import sleep
+from Parser import Parser 
 # from data_collector import DataCollector
-# from ui_app import UiApp
 
 class MainApp:
     @staticmethod
@@ -13,6 +14,8 @@ class MainApp:
 
         if "-collect-mode" in args:
             # Реальний збір даних
+            parser = Parser()
+            parser.collect()
             # collector = DataCollector()
             # collector.run_silent()
             sleep(5)
@@ -20,17 +23,17 @@ class MainApp:
         else:
             # Якщо запущено без аргументів — запускаємо UI
             print("Запуск графічного інтерфейсу...")
-            
             database_connector = DataBaseApi.DataBaseApi("sqlite")
             database_connector.connect()
             # database_connector.execute("INSERT INTO banks VALUES ('NBU', 'National bank of Ukraine', 'https://bank.gov.ua/')")
-            rows = database_connector.fetchall("SELECT bank_name FROM banks")
+            # rows = database_connector.fetchall("SELECT bank_name FROM banks")
             
-            for r in rows:
-                print(r, '\n')
-            
-            # app = UiApp()
-            # app.run()
+            # for r in rows:
+            #     print(r, '\n')
+                
+            print('Run currencyUi from else branch') 
+            app = CurrencyUI()
+            app.mainloop()   
 
     @staticmethod
     def run_background():
@@ -53,11 +56,4 @@ class MainApp:
         print("Фоновий процес збору даних запущено.")
 
 if __name__ == "__main__":
-    # Якщо викликати main.py без аргументів — відкриється UI
-    # але можна з нього запустити збір даних у фоні
-    args = sys.argv[1:]
-    if "-collect-mode" in args:
-        MainApp.run()
-    else:
-        # Приклад: можна викликати MainApp.run_background() прямо з UI
-        MainApp.run()
+    MainApp.run()
