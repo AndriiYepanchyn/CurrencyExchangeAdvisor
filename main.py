@@ -5,7 +5,6 @@ import DataBaseApi
 from CurrencyUI import CurrencyUI
 from time import sleep
 from Parser import Parser 
-# from data_collector import DataCollector
 
 class MainApp:
     @staticmethod
@@ -16,22 +15,16 @@ class MainApp:
             # Реальний збір даних
             parser = Parser()
             parser.collect()
-            # collector = DataCollector()
-            # collector.run_silent()
-            sleep(5)
             
         else:
             # Якщо запущено без аргументів — запускаємо UI
-            print("Запуск графічного інтерфейсу...")
             database_connector = DataBaseApi.DataBaseApi("sqlite")
             database_connector.connect()
             # database_connector.execute("INSERT INTO banks VALUES ('NBU', 'National bank of Ukraine', 'https://bank.gov.ua/')")
             # rows = database_connector.fetchall("SELECT bank_name FROM banks")
-            
             # for r in rows:
             #     print(r, '\n')
                 
-            print('Run currencyUi from else branch') 
             app = CurrencyUI()
             app.mainloop()   
 
@@ -53,7 +46,6 @@ class MainApp:
             stdin=subprocess.DEVNULL,
             creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW
         )
-        print("Фоновий процес збору даних запущено.")
 
 if __name__ == "__main__":
     MainApp.run()

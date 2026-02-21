@@ -79,6 +79,15 @@ class DataBaseApi:
         cursor = self.conn.cursor()
         cursor.execute(query, params or ())
         return cursor.fetchall()
+    
+    def get_table(self, query, params=None):
+        cursor = self.conn.cursor()
+        cursor.execute(query, params or [])
+
+        headers = [col[0] for col in cursor.description]
+        rows = cursor.fetchall()
+
+        return headers, rows
 
     def close(self):
         if self.conn:

@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Parser:
     database_connector =""
-    general_list_db_request ={} # Should return the following list of fields: date, bank_name, bank_url, bank_suffix, expected_response_format
+    general_list_db_request ={} # Should return the following list of fields: date, bank_name, bank_url, bank_suffix, expected_response_format, currency_id, rate_id
     
     def __init__(self):
        pass
@@ -15,25 +15,40 @@ class Parser:
         return [("NBU", 
                 "https://bank.gov.ua/", 
                 "/NBUStatService/v1/statdirectory/exchange?json", 
-                "JSON")]
+                "JSON"),
+                ("NBU", 
+                "https://bank.gov.ua/", 
+                "/NBUStatService/v1/statdirectory/exchange",
+                "XML")]
         
     def collect(self):
         print(" Parser.collect() run")
         resultset = self.dummy_request()
-        print("type of rs ", type(resultset))
         for r in resultset:
-            print("type of r = ", type(r))
+            bank_name, bank_url, bank_suffix, expected_response_format, currency_id, rate_id = r
             print("r = ", r)
-            bank_name, bank_url, bank_suffix, expected_response_format = r
             url = bank_url+bank_suffix
-            print("url = ", url)
             response = requests.get(url)
+            
             if response.status_code == 200:
-                data = response.json()  # JSON відповідь у словнику / списку
+                if(expected_response_format.upper()=="JSON"):
+                    print ("JSON case started data type =")
+                    data = response.json()  # JSON відповідь у словнику / списку
+                    print(type(data))
+                
+                # if(expected_response_format.upper()=="XML"):
+                #     print ("XML case started data type =")
+                #     data = response.xml()  
+                #     print(type(data))
+                
                 for item in data:
-                    print(item["cc"], item["rate"])
+                    print(item[currency_id], item[rate_id])
+                    
             else:
                 print("Помилка:", response.status_code)
+                
+                
+        self.close_connection()        
 
             
         
@@ -48,6 +63,9 @@ class Parser:
 
         self.database_connector.close()
         return banks_info
+    
+    def close_connection(self):
+        self.database_connector.close()
         
 
 @dataclass
@@ -56,3 +74,6 @@ class BankConfig:
     bank_url: str
     bank_suffix: str
     expected_response_format: str
+    currency_id: str
+    rate_id: str
+    

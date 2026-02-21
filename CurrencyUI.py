@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, Menu
 from datetime import datetime
+from SelectQuerryEnum import SelectEnum
+import ModalTableDialog
 
 class CurrencyUI(tk.Tk):
     # Background colors
@@ -41,6 +43,10 @@ class CurrencyUI(tk.Tk):
         self._build_tabs() # ---- Основна панель з табами ----
 
     # ====== ++ Menu =========================
+    def open_modal_dialog(self, parent, select_enum: SelectEnum):
+        ModalTableDialog.ModalTableDialog(parent, select_enum)
+        
+    
     def _create_menu(self):
         menubar = Menu(self)
         file_menu = Menu(menubar, tearoff=0)
@@ -52,9 +58,9 @@ class CurrencyUI(tk.Tk):
         file_menu.add_command(label="Exit", command=self.quit)
 
         # Розділ 2
-        edit_menu.add_command(label="Update")
         edit_menu.add_command(label="Refresh Rates")
-        edit_menu.add_command(label="Settings")
+        edit_menu.add_command(label="Banks settings", command=lambda: self.open_modal_dialog(self, SelectEnum.BANK_INFO) )
+        edit_menu.add_command(label="Currencies settings", command=lambda: self.open_modal_dialog(self, SelectEnum.CURRENCY_INFO))
 
         menubar.add_cascade(label="File", menu=file_menu)
         menubar.add_cascade(label="Actions", menu=edit_menu)
