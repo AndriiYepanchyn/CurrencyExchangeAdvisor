@@ -5,6 +5,42 @@ from psycopg2.extras import RealDictCursor
 
 
 class DataBaseApi:
+    
+    db_querries = {
+        "banks" : """CREATE TABLE IF NOT EXISTS banks (
+            bank_id TEXT PRIMARY KEY NOT NULL,
+            bank_name TEXT NOT NULL,
+            bank_url TEXT NOT NULL
+            );""",
+        "currency" : """CREATE TABLE IF NOT EXISTS currency (
+            currency_id TEXT PRIMARY KEY NOT NULL,
+            currency_name TEXT NOT NULL
+            );""",
+        "statistics" : """CREATE TABLE IF NOT EXISTS statistics (
+            record_id TEXT PRIMARY KEY NOT NULL,
+            date DATE,
+            bank_id TEXT NOT NULL,
+            currency_id TEXT NOT NULL,
+            value REAL NOT NULL
+            );""",
+        "suffixes" : """CREATE TABLE IF NOT EXISTS suffixes (
+            suffixes_id TEXT PRIMARY KEY NOT NULL,
+            bank_id TEXT NOT NULL,
+            suffix TEXT NOT NULL,
+            expected_response_format TEXT
+            );""",
+        "banks_info": """CREATE VIEW IF NOT EXISTS BANKS_INFO AS 
+            SELECT 
+                 bank_id AS "Bank id",
+                 bank_name AS "Bank name",
+                 bank_url AS "Bank's web page",
+                 suffix AS "Suffix",
+                 expected_response_format AS "Expected response format"
+            FROM banks
+            JOIN suffixes USING(bank_id); """,     
+        "settings" : ""
+    }
+    
     def __init__(self, db_type="sqlite", config=None):
         """
         db_type: "sqlite" або "postgres"
@@ -34,38 +70,12 @@ class DataBaseApi:
             )
         else:
             raise ValueError("Невідомий тип бази даних")
-        print("Self connection type = ", self.db_type)
 
-    def create_tables(self):
+    def create_tables(self, db_requests : dict):
         cursor = self.conn.cursor()
-        tables = ["banks", "currency", "statistics", "suffixes", "settings"]
         
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS banks (
-            bank_id TEXT PRIMARY KEY NOT NULL,
-            bank_name TEXT NOT NULL,
-            bank_url TEXT NOT NULL
-            );""")
-            
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS currency (
-            currency_id TEXT PRIMARY KEY NOT NULL,
-            currency_name TEXT NOT NULL
-            );""")
-        
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS suffixes (
-            suffixes_id TEXT PRIMARY KEY NOT NULL,
-            bank_id TEXT NOT NULL,
-            suffix TEXT NOT NULL,
-            expected_response_format TEXT
-            
-            );""")  
-        
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS statistics (
-            record_id TEXT PRIMARY KEY NOT NULL,
-            date DATE,
-            bank_id TEXT NOT NULL,
-            currency_id TEXT NOT NULL,
-            value REAL NOT NULL
-            );""") 
+        for querry in db_requests.values():
+            cursor.execute(querry)
 
         self.conn.commit()
 
@@ -98,7 +108,7 @@ if __name__ == "__main__":
     # приклад із SQLite
     db = DataBaseApi("sqlite")
     db.connect()
-    db.create_tables()
+    db.create_tables(DataBaseApi.db_querries)
     db.close()
 
     # приклад із PostgreSQL

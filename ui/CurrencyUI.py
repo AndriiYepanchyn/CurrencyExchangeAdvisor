@@ -1,52 +1,92 @@
 import tkinter as tk
 from tkinter import ttk, Menu
 from datetime import datetime
-from SelectQuerryEnum import SelectEnum
-import ModalTableDialog
+import DataBaseApi
+from repositories import RepositoryInterface as RepositoryInterface
+from repositories.FirstTableDummyRepository import FirstTableDummyRepository
+from repositories.Banks_repository import Banks_repository
+# from SelectQueryEnum import QueryEnum
+from ui.TablePanel import Table
+import ui.ModalTableDialog as ModalTableDialog
 
 class CurrencyUI(tk.Tk):
-    # Background colors
-    _color1="#6A0DAD"
-    _color2="#66ccff"
-    _color_white = "#ffffffff"
-    
-    _top_color1 = "#6A0DAD"     # фіолетовий
-    _top_color2 = "#55CCFF"     # блакитний
-    _bottom_color = "#55CCFF"
-    
-    # Fonts
-    _font_main = ("Segoe UI", 16, "bold")
-    _font_small = ("Segoe UI", 14)
-    
-    # Coordinates
-    _columns = [20, 220, 360]
-    _rows = [20, 60, 100]
-    
     # Advisor variables
     _currencies = ["USD", "EUR", "GBP", "CHF", "PLN", "Silver", "Gold", "Platinum"]
     _selected_currency = "USD"
     
     _best_buy_rate = 44.48
     _best_buy_bank = "RadaBank"
-    
     _best_sell_rate = 46.54
     _best_sell_bank = "Raiffaisenbank"
     
     
-    def __init__(self):
+    def __init__(self, db_connector: DataBaseApi):
         super().__init__()
+        
+        self._db_connector = db_connector
+        self.table_repository = FirstTableDummyRepository(self._db_connector)
+        self.banks_repository = Banks_repository(self._db_connector)
+        
+        self.configure_window()    
+
+        self._create_menu() # ---- Меню ----
+        self._build_tabs() 
+
+    # ====== Window config  ==================
+    def configure_window(self):
+        # Background colors
+        self._color1="#6A0DAD"
+        self._color2="#66ccff"
+        self._color_white = "#ffffffff"
+        
+        self._top_color1 = "#6A0DAD"     # фіолетовий
+        self._top_color2 = "#55CCFF"     # блакитний
+        self._bottom_color = "#55CCFF"
+        
+        # Fonts
+        self._font_main = ("Segoe UI", 16, "bold")
+        self._font_small = ("Segoe UI", 14)
+        
+        # Coordinates
+        self._columns = [20, 220, 360]
+        self._rows = [20, 60, 100]
+        
+        
         self.title("Currency Exchange Advisor")
         self.geometry("900x600")
         self.configure(bg="#cce6ff")
-
-        self._create_menu() # ---- Меню ----
-        self._build_tabs() # ---- Основна панель з табами ----
-
-    # ====== ++ Menu =========================
-    def open_modal_dialog(self, parent, select_enum: SelectEnum):
-        ModalTableDialog.ModalTableDialog(parent, select_enum)
         
-    
+        # Headings and background styles
+        style = ttk.Style()
+        style.theme_use("default")
+
+        # ---- Стиль заголовків ----
+        style.configure(
+            "Treeview.Heading",
+             background=self._color1,
+            foreground="white",
+            font=self._font_small
+            )
+
+        # ---- Стиль тіла таблиці ----
+        style.configure(
+            "Treeview",
+            background=self._color2,
+            fieldbackground=self._color2,  # заливка фону під рядками
+            foreground="black",
+            rowheight=24
+            )
+        # ---- Стиль вибраного рядка ----
+        style.map(
+            "Treeview",
+            background=[("selected", "#99bbff")],
+            foreground=[("selected", "black")]
+            )# ---- Основна панель з табами ----
+
+    # ======  Menu =========================
+    def open_modal_dialog(self, parent, repo: RepositoryInterface):
+        ModalTableDialog.ModalTableDialog(parent, repo)
+        
     def _create_menu(self):
         menubar = Menu(self)
         file_menu = Menu(menubar, tearoff=0)
@@ -59,15 +99,15 @@ class CurrencyUI(tk.Tk):
 
         # Розділ 2
         edit_menu.add_command(label="Refresh Rates")
-        edit_menu.add_command(label="Banks settings", command=lambda: self.open_modal_dialog(self, SelectEnum.BANK_INFO) )
-        edit_menu.add_command(label="Currencies settings", command=lambda: self.open_modal_dialog(self, SelectEnum.CURRENCY_INFO))
+        edit_menu.add_command(label="Banks settings", command=lambda: self.open_modal_dialog(self, self.banks_repository) )
+        # edit_menu.add_command(label="Currencies settings", command=lambda: self.open_modal_dialog(self, QueryEnum.CURRENCY_INFO))
 
         menubar.add_cascade(label="File", menu=file_menu)
         menubar.add_cascade(label="Actions", menu=edit_menu)
 
         self.config(menu=menubar)
 
-    # ====== ++ Build Tabs ===================
+    # ======  Build Tabs ===================
     def _build_tabs(self):
         notebook = ttk.Notebook(self)
         notebook.pack(fill="both", expand=True, padx=5, pady=5)
@@ -81,7 +121,6 @@ class CurrencyUI(tk.Tk):
         # self.fill_history_tab(tab_history)
 
     def fill_status_tab(self, parent):
-        print('start create top panel')
         self._create_top_panel(parent)
         self._create_bottom_panel(parent)
 
@@ -117,10 +156,10 @@ class CurrencyUI(tk.Tk):
             width=self.get_max_len(self._currencies) + 2,
             state = "readonly"
         )
-          
+        
         # Вставляємо у Canvas
         window_id = top_panel.create_window(self._columns[2], self._rows[0], window=currency_combobox, anchor="nw")
-                        
+                
         def make_transparent():
             bg = top_panel.get_bg_at(self._columns[2], self._rows[0])
 
@@ -202,80 +241,9 @@ class CurrencyUI(tk.Tk):
         
     # ====== Bottom panel  ==================    
     def _create_bottom_panel(self, parent):
-        bottom_panel = tk.Frame(parent, bg=self._color2)
-        # bottom_panel.pack(fill="both", expand=True)
-
-    # # ====== Нижня панель з таблицею ======
-    # def _create_bottom_panel(self, parent):
+        bottom_panel = Table(parent, self.table_repository)
+        bottom_panel.pack(fill="both", expand=True)
         
-        # Headings and background styles
-        style = ttk.Style()
-        style.theme_use("default")
-
-        # ---- Стиль заголовків ----
-        style.configure(
-            "Treeview.Heading",
-             background=self._color1,
-            foreground="white",
-            font=self._font_small
-            )
-
-        # ---- Стиль тіла таблиці ----
-        style.configure(
-            "Treeview",
-            background=self._color2,
-            fieldbackground=self._color2,  # заливка фону під рядками
-            foreground="black",
-            rowheight=24
-            )
-        # ---- Стиль вибраного рядка ----
-        style.map(
-            "Treeview",
-            background=[("selected", "#99bbff")],
-            foreground=[("selected", "black")]
-            )
-        
-        columns = ("Bank", "Buy rate", "Sell rate")
-        
-        self.tree = ttk.Treeview(parent, columns=columns, show="headings")
-        
-        for col in columns:
-            self.tree.heading(col, text=col, command=lambda c=col: self._sort_tree(c, False))
-            self.tree.column(col, width=150, anchor="center")
-
-    #     # Прокрутка
-        vsb = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscroll=vsb.set)
-        self.tree.pack(side="left", fill="both", expand=True)
-        vsb.pack(side="right", fill="y")
-
-    #     # Дані таблиці (замість запиту до БД)
-        data = [
-            ("PrivatBank", "39.3000", "40.1000"),
-            ("MonoBank", "39.4500", "40.1500"),
-            ("OschadBank", "39.2000", "40.0500"),
-            ("PUMB", "39.3800", "40.0900")
-        ]
-        for row in data:
-            self.tree.insert("", "end", values=row)
-
-    #     # Подія виділення рядка
-        self.tree.bind("<ButtonRelease-1>", self._on_select_row)
-
-    # ====== Події ======
-    def _on_select_row(self, event):
-        selected = self.tree.selection()
-        if selected:
-            item = self.tree.item(selected[0])["values"]
-            print("Selected row:", item)
-
-    def _sort_tree(self, col, reverse):
-        data = [(self.tree.set(k, col), k) for k in self.tree.get_children("")]
-        data.sort(reverse=reverse)
-        for index, (val, k) in enumerate(data):
-            self.tree.move(k, "", index)
-        self.tree.heading(col, command=lambda: self._sort_tree(col, not reverse))
-    
     def get_max_len(self, arg =[]):
         '''
         Return len of list element which has max lenght
@@ -343,5 +311,7 @@ class GradientFrame(tk.Canvas):
 
 # ====== Запуск ======
 if __name__ == "__main__":
-    app = CurrencyUI()
+    db = DataBaseApi.DataBaseApi("sqlite")
+    db.connect()
+    app = CurrencyUI(db)
     app.mainloop()

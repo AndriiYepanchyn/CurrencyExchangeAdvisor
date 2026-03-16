@@ -2,14 +2,17 @@ import sys
 import subprocess
 import os
 import DataBaseApi
-from CurrencyUI import CurrencyUI
+from ui.CurrencyUI import CurrencyUI
 from time import sleep
+from repositories.FirstTableDummyRepository import FirstTableDummyRepository
 from Parser import Parser 
 
 class MainApp:
     @staticmethod
     def run():
         args = sys.argv[1:]
+        database_connector = DataBaseApi.DataBaseApi("sqlite")
+        database_connector.connect()
 
         if "-collect-mode" in args:
             # Реальний збір даних
@@ -18,14 +21,11 @@ class MainApp:
             
         else:
             # Якщо запущено без аргументів — запускаємо UI
-            database_connector = DataBaseApi.DataBaseApi("sqlite")
-            database_connector.connect()
             # database_connector.execute("INSERT INTO banks VALUES ('NBU', 'National bank of Ukraine', 'https://bank.gov.ua/')")
-            # rows = database_connector.fetchall("SELECT bank_name FROM banks")
+            # rows = database_connector.execute("SELECT * FROM BANKS_INFO;")
             # for r in rows:
             #     print(r, '\n')
-                
-            app = CurrencyUI()
+            app = CurrencyUI(database_connector)
             app.mainloop()   
 
     @staticmethod
