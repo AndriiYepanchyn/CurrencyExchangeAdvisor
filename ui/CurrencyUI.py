@@ -4,8 +4,8 @@ from datetime import datetime
 import DataBaseApi
 from repositories import RepositoryInterface as RepositoryInterface
 from repositories.FirstTableDummyRepository import FirstTableDummyRepository
-from repositories.Banks_repository import Banks_repository
-# from SelectQueryEnum import QueryEnum
+from repositories.BanksRepository import BanksRepository
+from repositories.CurrencyRepository import CurrencyRepository
 from ui.TablePanel import Table
 import ui.ModalTableDialog as ModalTableDialog
 
@@ -25,7 +25,8 @@ class CurrencyUI(tk.Tk):
         
         self._db_connector = db_connector
         self.table_repository = FirstTableDummyRepository(self._db_connector)
-        self.banks_repository = Banks_repository(self._db_connector)
+        self.banks_repository = BanksRepository(self._db_connector)
+        self.currency_repository = CurrencyRepository(self._db_connector)
         
         self.configure_window()    
 
@@ -100,7 +101,7 @@ class CurrencyUI(tk.Tk):
         # Розділ 2
         edit_menu.add_command(label="Refresh Rates")
         edit_menu.add_command(label="Banks settings", command=lambda: self.open_modal_dialog(self, self.banks_repository) )
-        # edit_menu.add_command(label="Currencies settings", command=lambda: self.open_modal_dialog(self, QueryEnum.CURRENCY_INFO))
+        edit_menu.add_command(label="Currencies settings", command=lambda: self.open_modal_dialog(self, self.currency_repository))
 
         menubar.add_cascade(label="File", menu=file_menu)
         menubar.add_cascade(label="Actions", menu=edit_menu)

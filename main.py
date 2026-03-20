@@ -3,8 +3,6 @@ import subprocess
 import os
 import DataBaseApi
 from ui.CurrencyUI import CurrencyUI
-from time import sleep
-from repositories.FirstTableDummyRepository import FirstTableDummyRepository
 from Parser import Parser 
 
 class MainApp:

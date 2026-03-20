@@ -1,7 +1,7 @@
 from repositories.RepositoryInterface import RepositoryInterfce
 import DataBaseApi
 
-class Banks_repository(RepositoryInterfce):
+class CurrencyRepository(RepositoryInterfce):
     
     def __init__(self, connection :DataBaseApi):
         self.conn = connection
@@ -17,20 +17,19 @@ class Banks_repository(RepositoryInterfce):
 
     # ======   Getters  =========
     def get_title(self):
-        return "Bank information"
+        return "Currency information"
     
     def get_table(self,  params=None):
-        querry = "SELECT * FROM BANKS_INFO;"
+        querry = """SELECT currency_id AS 'Code', currency_name AS 'Currency'
+        FROM currency;"""
         return self.conn.get_table(querry, params)
         
     def get_headers(self):
         headers, rows = self.get_table(None)
-        
         return headers
     
     def get_rows(self):
         headers, rows = self.get_table(None)
-       
         return rows
 
     def get_row(self, index):
