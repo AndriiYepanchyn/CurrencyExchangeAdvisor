@@ -1,6 +1,6 @@
 import tkinter as tk
 import repositories.RepositoryInterface as RepositoryInterface
-from ui.TablePanel import Table
+from ui.EditableTablePanel import EditableTablePanel
 
 
 class ModalTableDialog(tk.Toplevel):
@@ -17,7 +17,7 @@ class ModalTableDialog(tk.Toplevel):
         self.grab_set()
         self.center_on_parent(parent)
         
-        self.table = Table(self, repository)
+        self.table = EditableTablePanel(self, repository)
         self.table.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
     
 # -------  Service methods  ---------------------- 

@@ -2,8 +2,9 @@ import tkinter as tk
 from tkinter import ttk, Menu
 from repositories.RepositoryInterface import RepositoryInterfce
 import tkinter.font as tkFont
+from tkinter import messagebox
 
-class Table(tk.Frame):
+class TablePanel(tk.Frame):
     _color2="#66ccff"
     
     def __init__(self, parent, repository : RepositoryInterfce):
@@ -13,8 +14,7 @@ class Table(tk.Frame):
         self.columns = repository.get_headers()
         self.rows = repository.get_rows()
         
-        self._dirty_row = None
-        self.clipboard_rows = []
+        self.selected_rows = None
         
         # Creating table
         container = tk.Frame(self)
@@ -42,13 +42,9 @@ class Table(tk.Frame):
         vsb.pack(side="right", fill="y")
         
         self.autosize_columns()     
-        self.tree.tag_configure("new_row", background="white")   
-        
+          
         # Подія виділення рядка
         self.tree.bind("<ButtonRelease-1>", self.on_select_row)
-        
-        # подвійний клік для редагування
-        # self.tree.bind("<Double-1>", self.edit_cell)
         
         # Context menu
         self._context_menu = self.create_context_menu()
@@ -79,14 +75,9 @@ class Table(tk.Frame):
         self.tree.heading(col, command=lambda: self.sort_tree(col, not reverse))
     
     def on_select_row(self, event):
-        selected = self.tree.selection()
-        if selected:
-            item = self.tree.item(selected[0])["values"]
-            print("Selected row:", item)
+        self.selected_rows = self.tree.selection()
 
     def show_context_menu(self, event):
-
-        
         iid = self.tree.identify_row(event.y)
         
         if iid:
@@ -96,53 +87,7 @@ class Table(tk.Frame):
             
     def create_context_menu(self):
         self.menu = tk.Menu(self, tearoff=0)
-
-        self.menu.add_command(label="Додати рядок", command=self.add_row)
-        self.menu.add_command(label="Редагувати", command=self.edit_selected)
-        self.menu.add_separator()
-
-        self.menu.add_command(label="Копіювати")#, command=self.copy_rows)
-        self.menu.add_command(label="Вставити")#, command=self.paste_rows)
-        self.menu.add_separator()
-
-        self.menu.add_command(label="Видалити рядок")#, command=self.delete_row)
-        self.menu.add_command(label="Видалити виділені")#, command=self.delete_selected)
-
-        
         return self.menu
-    
-    def add_row(self):
-        if self._dirty_row is not None:
-            return
-        
-        self._dirty_row = True
-        iid = self.tree.insert("", "end", values = [""] * len(self.columns), tags=("new_row"))
-        self.tree.selection_set(iid) 
-        self.edit_cell_by_iid(iid, "#1")
-        
-    def edit_selected(self):
-        sel = self.tree.selection()
-        if sel:
-            self.edit_cell_by_iid(sel[0], "#1") 
-            
-    def edit_cell_by_iid(self, row, col):
-
-        x, y, w, h = self.tree.bbox(row, col)
-        value = self.tree.set(row, col)
-        entry = tk.Entry(self.tree)
-        entry.place(x=x, y=y, width=w, height=h)
-        entry.insert(0, value)
-        entry.focus()
-
-        def save(event):
-            self.tree.set(row, col, entry.get())
-            entry.destroy()
-            # рядок більше не dirty
-            if row == self._dirty_row:
-                self._dirty_row = False
-
-        entry.bind("<Return>", save)  
-        entry.bind("<FocusOut>", save)                
     
     # -------  Service methods  ---------------------- 
         

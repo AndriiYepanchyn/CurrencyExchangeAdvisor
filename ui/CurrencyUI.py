@@ -6,7 +6,7 @@ from repositories import RepositoryInterface as RepositoryInterface
 from repositories.FirstTableDummyRepository import FirstTableDummyRepository
 from repositories.BanksRepository import BanksRepository
 from repositories.CurrencyRepository import CurrencyRepository
-from ui.TablePanel import Table
+from ui.TablePanel import TablePanel
 import ui.ModalTableDialog as ModalTableDialog
 
 class CurrencyUI(tk.Tk):
@@ -242,7 +242,7 @@ class CurrencyUI(tk.Tk):
         
     # ====== Bottom panel  ==================    
     def _create_bottom_panel(self, parent):
-        bottom_panel = Table(parent, self.table_repository)
+        bottom_panel = TablePanel(parent, self.table_repository)
         bottom_panel.pack(fill="both", expand=True)
         
     def get_max_len(self, arg =[]):
