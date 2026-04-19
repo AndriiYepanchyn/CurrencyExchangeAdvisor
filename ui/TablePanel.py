@@ -4,15 +4,23 @@ from repositories.RepositoryInterface import RepositoryInterfce
 import tkinter.font as tkFont
 from tkinter import messagebox
 
+
 class TablePanel(tk.Frame):
     _color2="#66ccff"
     
     def __init__(self, parent, repository : RepositoryInterfce):
         super().__init__(parent, bg=self._color2)
-                
-        self._repository = repository
-        self.columns = repository.get_headers()
-        self.rows = repository.get_rows()
+        
+        try:        
+            self._repository = repository
+            self.columns = repository.get_headers()
+            self.rows = repository.get_rows()
+        except  Exception as e:
+            title = repository.get_title()
+            result = messagebox.showerror(
+                "Can't get table data ",
+                f"Cant't get table data using repositiry {title}. \n{e}" 
+            )  
         
         self.selected_rows = None
         
@@ -49,8 +57,7 @@ class TablePanel(tk.Frame):
         # Context menu
         self._context_menu = self.create_context_menu()
         self.tree.bind("<Button-3>", self.show_context_menu)
-    
-        
+       
     # ====== Події ======
     def sort_tree(self, col, reverse):
         # перевіряємо чи колонка числова
@@ -90,7 +97,6 @@ class TablePanel(tk.Frame):
         return self.menu
     
     # -------  Service methods  ---------------------- 
-        
     def autosize_columns(self):
         font = tkFont.nametofont("TkDefaultFont")
 
