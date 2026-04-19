@@ -79,13 +79,33 @@ class DataBaseApi:
 
         self.conn.commit()
 
+
     def execute(self, query, params=None):
+        """Use this method for NO SELECT queries
+
+        Args:
+            query (_type_): _description_
+            params (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: returns cursor of connection
+        """
         cursor = self.conn.cursor()
         cursor.execute(query, params or ())
         self.conn.commit()
         return cursor
 
+
     def fetchall(self, query, params=None):
+        """Returns results of SELECT queries
+
+        Args:
+            query (_type_): _description_
+            params (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: returns rows of the resultset
+        """
         cursor = self.conn.cursor()
         cursor.execute(query, params or ())
         return cursor.fetchall()
