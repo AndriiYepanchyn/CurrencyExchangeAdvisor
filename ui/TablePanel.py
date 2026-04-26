@@ -36,7 +36,7 @@ class TablePanel(tk.Frame):
         
         for col in self.columns:
             self.tree.heading(col, text=col, command=lambda c=col: self.sort_tree(c, False))
-            self.tree.column(col, width=150, anchor="center")
+            self.tree.column(col, width=150, anchor="w")
             
         for row in self.rows:
             self.tree.insert("", tk.END, values=row) 

@@ -27,9 +27,8 @@ class CurrencyUI(tk.Tk):
         self.table_repository = FirstTableDummyRepository(self._db_connector)
         self.banks_repository = BanksRepository(self._db_connector)
         self.currency_repository = CurrencyRepository(self._db_connector)
-        
+                
         self.configure_window()    
-
         self._create_menu() # ---- Меню ----
         self._build_tabs() 
 

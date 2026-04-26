@@ -1,11 +1,13 @@
 from ui.TablePanel import TablePanel
 import tkinter as tk
 from tkinter import ttk, Menu
+from tkinter import messagebox
 
 
 class EditableTablePanel(TablePanel):
     def __init__(self, parent, repository):
         super().__init__(parent, repository)
+        self._editing = False
         
         self.tree.tag_configure("new_row", background="white") 
         
@@ -31,7 +33,6 @@ class EditableTablePanel(TablePanel):
         self.menu.add_command(label="Видалити виділені")#, command=self.delete_selected)
     
         return self.menu
-    
     
     def add_row(self):
        iid = self.tree.insert("", "end", values = [""] * len(self.columns), tags=("new_row"))
@@ -74,10 +75,9 @@ class EditableTablePanel(TablePanel):
         iid = self._editing_row
         values = self.tree.item(iid)["values"]
 
-        # self.save_line(values)
-        # TODO ADD save to repository
-        print('Call repository add row method()')
-
+        saving_row = dict(zip(self.columns, values))
+        self._repository.insert(saving_row)
+        
         self._editing = False
         self._editing_row = None
         self._editing_col_index = None     
@@ -102,7 +102,7 @@ class EditableTablePanel(TablePanel):
 
         # якщо клік НЕ в поточний рядок
         if row != self._editing_row:
-            result = tk.messagebox.askyesno(
+            result = messagebox.askyesno(
                 "Незавершений рядок",
                 "Рядок не буде збережений. Покинути редагування?"
             )
@@ -115,7 +115,26 @@ class EditableTablePanel(TablePanel):
 
             return "break"  # блокує стандартну поведінку     
         
-    def edit_selected(self):
-        sel = self.tree.selection()
-        if sel:
-            self.edit_cell_by_iid(sel[0], "#1")                 
+    def edit_selected(self, event):
+        row = self.tree.identify_row(event.y)
+        col = self.tree.identify_column(event.x)
+
+        if not row or not col:
+            return
+        
+        print('Click on column = ', col)
+        self.edit_cell_by_iid(row, col)   
+        
+        # TODO check implementation
+    def delete_selected_row(self):
+        selected = self.tree.selection()
+        if not selected:
+            return
+
+        item_id = selected[0]
+        values = self.tree.item(item_id)["values"]
+
+        row_id = values[0]
+        self.repository.delete(row_id)
+
+        self.tree.delete(item_id)                   

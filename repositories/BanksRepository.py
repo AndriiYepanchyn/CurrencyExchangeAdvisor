@@ -53,8 +53,56 @@ class BanksRepository(RepositoryInterfce):
     def update_params(self, new_params: dict):
         pass
     
-    def insert(self, values):
-        pass
+    def insert(self, values: dict):
+        bank_id = values['Bank id']
+        bank_name = values['Bank name']
+        bank_url =values["Bank's web page"]
+        suffix = values["Suffix"]
+        expected_response_format = values["Expected response format"]
+                         
+        print("BankRepository.insert() Data for Select")
+        print(f"{bank_id};  {bank_name}; {bank_url};  {suffix}; {expected_response_format}")
+        
+        
+        # Check if such bank already exist
+        query = f"SELECT * FROM BANKS WHERE bank_id = '{bank_id}'"
+        result = self.conn.fetchall(query, None)
+        
+        if not result: 
+            insert_query = """
+            INSERT INTO BANKS (bank_id, bank_name, bank_url)
+            VALUES (?, ?, ?)
+            """
+            params = (bank_id, bank_name, bank_url)
+            self.conn.execute(insert_query, params)
+            
+        #Check if such record already exist in the SUFFIXES
+        query = f"SELECT * FROM suffixes WHERE bank_id = '{bank_id}'"
+        result = self.conn.fetchall(query, None)
+        
+        if not result:
+            insert_query = """
+            INSERT INTO suffixes (suffixes_id, bank_id, suffix, expected_response_format)
+            VALUES (?, ?, ?, ?)
+            """
+            suffixes_id = f"{bank_id}_{expected_response_format}"
+            
+            params = (suffixes_id, bank_id, suffix, expected_response_format)
+            self.conn.execute(insert_query, params)
+        else: 
+            for rec in result:
+                db_suffixes_id, db_bank_id, db_suffix, db_expected = rec
+                eq = (db_suffix == suffix)
+                print(f'Check database suffix: %s == input suffix: %s ? %s' %(db_suffix, suffix, eq) )
+            
+        
+         
+            
+        print("refreshed database:")
+        print('-'*80)
+        res = self.conn.fetchall('SELECT * FROM BANKS_INFO;', None)
+        print('BANKS_INFO_VIEW DATA = ', res)   
+                 
 
     # =====  Delete  ==========
     def delete_row(self, row_id):
